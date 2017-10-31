@@ -135,6 +135,12 @@ class ContentEntityNormalizer extends NormalizerBase {
         if (!$field->access('view', $context['account'])) {
           continue;
         }
+        // Generate mainRelationships as additional triples
+        if (($name == "field_p2p_role_relation" || $name == "field_document_genre" || $name == "field_related_document" || $name == "field_person_role_relation") && !$field->isEmpty()) {
+          $normalized2 = $this->getTriplesFromRelations($field, $format, $context, $name);
+          $normalized = array_merge_recursive($normalized, $normalized2);
+        }
+
         // This tells consecutive calls to content entity normalisers
         // that @context is not needed again.
         $normalized_property = $this->serializer->normalize($field, $format, $context);
@@ -151,6 +157,73 @@ class ContentEntityNormalizer extends NormalizerBase {
       $normalized['@graph'] = array_values($normalized['@graph']);
     }
     return $normalized;
+  }
+
+  /*
+   * Generates additional triples for specific inline entities.
+   * Specificially needed in the dragomans project.
+   */
+  protected function getTriplesFromRelations($field, $format, array $context, $fieldName) {
+    $normalized_field_items = [];
+    foreach ($field as $field_item) {
+      $values = $field_item->toArray();
+      $target_id = $values["target_id"];
+      $controller = \Drupal::entityManager()->getStorage("node");
+      $target_entity = $controller->load($target_id);
+
+      if ($fieldName == "field_p2p_role_relation") {
+        $field_person = $target_entity->get("field_person")->getValue();
+        $field_person_id = $field_person[0]["target_id"];
+        $field_person_entity = $controller->load($field_person_id);
+        $person_url = $field_person_entity->url('canonical', ['absolute' => TRUE]);
+        $person_url = $person_url . "?_format=jsonld";
+
+        $field_role = $target_entity->get("field_role")->getValue();
+        $field_role_id = $field_role[0]["target_id"];
+        $field_role_entity = $controller->load($field_role_id);
+        $role_name = $field_role_entity->get("title")->getValue();
+        $role_name_value = $role_name[0]["value"];
+
+        $values_clean['@id'] = $person_url;
+        $normalized["dragomans:" . $role_name_value] = [$values_clean];
+        $normalized_field_items['@graph'][$context['current_entity_id']] = $normalized;
+      } else if ($fieldName == "field_document_genre") {
+        $field_entity_ref = $target_entity->get("field_genre")->getValue();
+        $entity_id = $field_entity_ref[0]["target_id"];
+        $field_entity = $controller->load($entity_id);
+        $field_url = $field_entity->url('canonical', ['absolute' => TRUE]);
+        $field_url = $field_url . "?_format=jsonld";
+
+        $values_clean['@id'] = $field_url;
+        $normalized["schema:genre"] = [$values_clean];
+        $normalized_field_items['@graph'][$context['current_entity_id']] = $normalized;
+      } else if ($fieldName == "field_related_document") {
+        $field_entity_ref = $target_entity->get("field_document")->getValue();
+        $entity_id = $field_entity_ref[0]["target_id"];
+        $field_entity = $controller->load($entity_id);
+        $field_url = $field_entity->url('canonical', ['absolute' => TRUE]);
+        $field_url = $field_url . "?_format=jsonld";
+
+        $field_value = $target_entity->get("field_document_relation_type")->getValue();
+
+        $values_clean['@id'] = $field_url;
+        $normalized["dragomans:" . $field_value[0]["value"]] = [$values_clean];
+        $normalized_field_items['@graph'][$context['current_entity_id']] = $normalized;
+      } else if ($fieldName == "field_person_role_relation") {
+        $field_entity_ref = $target_entity->get("field_person")->getValue();
+        $entity_id = $field_entity_ref[0]["target_id"];
+        $field_entity = $controller->load($entity_id);
+        $field_url = $field_entity->url('canonical', ['absolute' => TRUE]);
+        $field_url = $field_url . "?_format=jsonld";
+
+        $field_value = $target_entity->get("field_document_person_role")->getValue();
+
+        $values_clean['@id'] = $field_url;
+        $normalized["dragomans:" . $field_value[0]["value"]] = [$values_clean];
+        $normalized_field_items['@graph'][$context['current_entity_id']] = $normalized;
+      }
+    }
+    return $normalized_field_items;
   }
 
   /**
