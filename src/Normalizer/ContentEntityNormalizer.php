@@ -164,6 +164,9 @@ class ContentEntityNormalizer extends NormalizerBase {
    * Specificially needed in the dragomans project.
    */
   protected function getTriplesFromRelations($field, $format, array $context, $fieldName) {
+
+    $dragomans_ns = "https://github.com/digitalutsc/dragomans_ontology/";
+
     $normalized_field_items = [];
     foreach ($field as $field_item) {
       $values = $field_item->toArray();
@@ -185,7 +188,7 @@ class ContentEntityNormalizer extends NormalizerBase {
         $role_name_value = $role_name[0]["value"];
 
         $values_clean['@id'] = $person_url;
-        $normalized["dragomans:" . $role_name_value] = [$values_clean];
+        $normalized[$dragomans_ns . $role_name_value] = [$values_clean];
         $normalized_field_items['@graph'][$context['current_entity_id']] = $normalized;
       } else if ($fieldName == "field_document_genre") {
         $field_entity_ref = $target_entity->get("field_genre")->getValue();
@@ -195,7 +198,7 @@ class ContentEntityNormalizer extends NormalizerBase {
         $field_url = $field_url . "?_format=jsonld";
 
         $values_clean['@id'] = $field_url;
-        $normalized["schema:genre"] = [$values_clean];
+        $normalized["http://schema.org/genre"] = [$values_clean];
         $normalized_field_items['@graph'][$context['current_entity_id']] = $normalized;
       } else if ($fieldName == "field_related_document") {
         $field_entity_ref = $target_entity->get("field_document")->getValue();
@@ -207,7 +210,7 @@ class ContentEntityNormalizer extends NormalizerBase {
         $field_value = $target_entity->get("field_document_relation_type")->getValue();
 
         $values_clean['@id'] = $field_url;
-        $normalized["dragomans:" . $field_value[0]["value"]] = [$values_clean];
+        $normalized[$dragomans_ns . $field_value[0]["value"]] = [$values_clean];
         $normalized_field_items['@graph'][$context['current_entity_id']] = $normalized;
       } else if ($fieldName == "field_person_role_relation") {
         $field_entity_ref = $target_entity->get("field_person")->getValue();
@@ -219,7 +222,7 @@ class ContentEntityNormalizer extends NormalizerBase {
         $field_value = $target_entity->get("field_document_person_role")->getValue();
 
         $values_clean['@id'] = $field_url;
-        $normalized["dragomans:" . $field_value[0]["value"]] = [$values_clean];
+        $normalized[$dragomans_ns. $field_value[0]["value"]] = [$values_clean];
         $normalized_field_items['@graph'][$context['current_entity_id']] = $normalized;
       }
     }
