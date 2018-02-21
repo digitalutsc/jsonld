@@ -174,16 +174,28 @@ class ContentEntityNormalizer extends NormalizerBase {
       $controller = \Drupal::entityManager()->getStorage("node");
       $target_entity = $controller->load($target_id);
 
+      if($target_entity ==  null) {
+        break;
+      }
+      
       if ($fieldName == "field_p2p_role_relation") {
         $field_person = $target_entity->get("field_person")->getValue();
         $field_person_id = $field_person[0]["target_id"];
         $field_person_entity = $controller->load($field_person_id);
+        if($field_person_entity == null) {
+          break;
+        }
+
         $person_url = $field_person_entity->url('canonical', ['absolute' => TRUE]);
         $person_url = $person_url . "?_format=jsonld";
 
         $field_role = $target_entity->get("field_role")->getValue();
         $field_role_id = $field_role[0]["target_id"];
         $field_role_entity = $controller->load($field_role_id);
+        if($field_role_entity == null) {
+          break;
+        }
+
         $role_name = $field_role_entity->get("title")->getValue();
         $role_name_value = $role_name[0]["value"];
 
@@ -194,6 +206,10 @@ class ContentEntityNormalizer extends NormalizerBase {
         $field_entity_ref = $target_entity->get("field_genre")->getValue();
         $entity_id = $field_entity_ref[0]["target_id"];
         $field_entity = $controller->load($entity_id);
+        if($field_entity == null) {
+          break;
+        }
+
         $field_url = $field_entity->url('canonical', ['absolute' => TRUE]);
         $field_url = $field_url . "?_format=jsonld";
 
@@ -204,6 +220,10 @@ class ContentEntityNormalizer extends NormalizerBase {
         $field_entity_ref = $target_entity->get("field_document")->getValue();
         $entity_id = $field_entity_ref[0]["target_id"];
         $field_entity = $controller->load($entity_id);
+
+        if($field_entity == null) {
+          break;
+        }
         $field_url = $field_entity->url('canonical', ['absolute' => TRUE]);
         $field_url = $field_url . "?_format=jsonld";
 
@@ -216,6 +236,10 @@ class ContentEntityNormalizer extends NormalizerBase {
         $field_entity_ref = $target_entity->get("field_person")->getValue();
         $entity_id = $field_entity_ref[0]["target_id"];
         $field_entity = $controller->load($entity_id);
+        if($field_entity == null) {
+          break;
+        }
+
         $field_url = $field_entity->url('canonical', ['absolute' => TRUE]);
         $field_url = $field_url . "?_format=jsonld";
 
