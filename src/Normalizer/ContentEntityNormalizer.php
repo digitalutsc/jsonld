@@ -175,15 +175,15 @@ class ContentEntityNormalizer extends NormalizerBase {
       $target_entity = $controller->load($target_id);
 
       if($target_entity ==  null) {
-        break;
+        continue;
       }
-      
+
       if ($fieldName == "field_p2p_role_relation") {
         $field_person = $target_entity->get("field_person")->getValue();
         $field_person_id = $field_person[0]["target_id"];
         $field_person_entity = $controller->load($field_person_id);
         if($field_person_entity == null) {
-          break;
+          continue;
         }
 
         $person_url = $field_person_entity->url('canonical', ['absolute' => TRUE]);
@@ -193,7 +193,7 @@ class ContentEntityNormalizer extends NormalizerBase {
         $field_role_id = $field_role[0]["target_id"];
         $field_role_entity = $controller->load($field_role_id);
         if($field_role_entity == null) {
-          break;
+          continue;
         }
 
         $role_name = $field_role_entity->get("title")->getValue();
@@ -207,7 +207,7 @@ class ContentEntityNormalizer extends NormalizerBase {
         $entity_id = $field_entity_ref[0]["target_id"];
         $field_entity = $controller->load($entity_id);
         if($field_entity == null) {
-          break;
+          continue;
         }
 
         $field_url = $field_entity->url('canonical', ['absolute' => TRUE]);
@@ -222,7 +222,7 @@ class ContentEntityNormalizer extends NormalizerBase {
         $field_entity = $controller->load($entity_id);
 
         if($field_entity == null) {
-          break;
+          continue;
         }
         $field_url = $field_entity->url('canonical', ['absolute' => TRUE]);
         $field_url = $field_url . "?_format=jsonld";
@@ -237,7 +237,7 @@ class ContentEntityNormalizer extends NormalizerBase {
         $entity_id = $field_entity_ref[0]["target_id"];
         $field_entity = $controller->load($entity_id);
         if($field_entity == null) {
-          break;
+          continue;
         }
 
         $field_url = $field_entity->url('canonical', ['absolute' => TRUE]);
